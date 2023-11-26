@@ -3,8 +3,9 @@ from pathlib import Path
 import pandas as pd
 
 
-class TrainingStats:
-    def __init__(self, stats_dir: Path):
+class ExperimentRecorder:
+    def __init__(self, id: str, stats_dir: Path):
+        self.id = id
         self.stats_dir = stats_dir
         self.loss_x = []
         self.loss_y = []
@@ -19,4 +20,4 @@ class TrainingStats:
         df = pd.DataFrame(
             {"iteration": self.loss_x, "avg_loss": self.loss_y, "epoch": self.epoch}
         )
-        df.to_csv(stats_dir / "latest_stats.csv")
+        df.to_csv(self.stats_dir / f"{self.id}.csv")

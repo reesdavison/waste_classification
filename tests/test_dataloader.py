@@ -8,6 +8,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 from recycle_eye.classifier.dataloader import BagDataset, basic_transform
+from recycle_eye.classifier.experiment_params import DataCount
 
 """Let's check we can get our dataset stats to match the CIFAR input data stats to remove potential
 bugs in that area before we begin training.
@@ -60,6 +61,18 @@ def test_bag_dataset():
     images, labels = next(dataiter)
     _image_and_label_checks(images, labels)
     assert (labels <= 2).all()
+
+
+def test_get_counts():
+    trainset = BagDataset(root_dir="./data", transform=basic_transform())
+    assert trainset.get_label_counts() == sorted(
+        [
+            DataCount(ord_label=0, label="compostable_waste", count=44),
+            DataCount(ord_label=1, label="general_waste", count=51),
+            DataCount(ord_label=2, label="mixed_recycling", count=51),
+        ],
+        key=lambda count: count.ord_label,
+    )
 
 
 @pytest.mark.skip(reason="Visual test check")

@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,8 @@ import torch
 from skimage import io, transform
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms, utils
+
+from recycle_eye.classifier.experiment_params import DataCount
 
 
 def basic_transform() -> transforms.Compose:
@@ -38,7 +41,8 @@ class BagDataset(Dataset):
         self.root_dir = Path(root_dir)
         self.transform = transform
 
-        dirs = os.listdir(root_dir)
+        # ensure we receive in the same order every time
+        dirs = sorted(os.listdir(root_dir))
 
         self.images = []
         self.labels = []
@@ -51,6 +55,16 @@ class BagDataset(Dataset):
                     self.images.append(Path(dir) / img_name)
                     self.labels.append(label)
 
+    def get_label_counts(self) -> List[DataCount]:
+        return [
+            DataCount(
+                ord_label=ord_label,
+                label=label,
+                count=sum([check_label == ord_label for check_label in self.labels]),
+            )
+            for ord_label, label in self.label_map.items()
+        ]
+
     def __len__(self):
         return len(self.images)
 
@@ -59,12 +73,10 @@ class BagDataset(Dataset):
             idx = idx.tolist()
 
         img_name = os.path.join(self.root_dir, self.images[idx])
-
         image = io.imread(img_name)
 
         if self.transform:
             sample = self.transform(image)
 
         label = self.labels[idx]
-
         return sample, label
