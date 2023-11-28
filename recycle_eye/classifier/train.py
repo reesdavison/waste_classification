@@ -1,36 +1,69 @@
 from datetime import datetime
-from pathlib import Path
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as torch_data
 
 from recycle_eye.classifier.basic_network import Net
 from recycle_eye.classifier.dataloader import BagDataset, basic_transform
-from recycle_eye.classifier.experiment_params import ExperimentParams
+from recycle_eye.classifier.experiment_params import NNClassifierParams
 from recycle_eye.classifier.experiment_recorder import ExperimentRecorder
+from recycle_eye.paths import DATA_DIR, MODEL_DIR, STATS_DIR
 
-root_dir = Path(__file__).parent.parent.parent
-data_dir = root_dir / "data"
-model_dir = root_dir / "models"
-stats_dir = root_dir / "training_stats"
+torch.manual_seed(0)
+
+
+def cross_validate(test_loader):
+    # perform cross validation
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels, _ = data
+            # calculate outputs by running images through the network
+            outputs = net(images)
+            # the class with the highest energy is what we choose as prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    accuracy = correct / total
+    return accuracy
 
 
 if __name__ == "__main__":
     exp_id = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-    params = ExperimentParams(
+    params = NNClassifierParams(
         id=exp_id,
         num_epochs=50,
         lr=0.01,
         momentum=0.9,
         batch_size=4,
+        split_seed=42,
+        test_split=0.2,
+        remove_bg=True,
+        load_cifar_weights=True,
+        auto_augment=True,
     )
 
-    trainset = BagDataset(root_dir=data_dir, transform=basic_transform())
-    trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=params.batch_size, shuffle=True, num_workers=2
+    dataset = BagDataset(
+        root_dir=DATA_DIR, transform=basic_transform(), remove_bg=params.remove_bg
     )
+    generator1 = torch.Generator().manual_seed(params.split_seed)
+    train_set, test_set = torch_data.random_split(
+        dataset, [1 - params.test_split, params.test_split], generator=generator1
+    )
+    train_loader = torch.utils.data.DataLoader(
+        train_set, batch_size=params.batch_size, shuffle=True, num_workers=2
+    )
+    test_loader = torch.utils.data.DataLoader(
+        test_set, batch_size=params.batch_size, shuffle=True, num_workers=2
+    )
+
     net = Net()
+    if params.load_cifar_weights:
+        net.load_state_dict(torch.load("./cifar_net.pth"), strict=False)
+
     criterion = nn.CrossEntropyLoss()
 
     # cifar_params lr=0.001, momentum=0.9
@@ -39,19 +72,18 @@ if __name__ == "__main__":
     # print every print_loss_count mini-batches
     print_loss_count = 5
 
-    recorder = ExperimentRecorder(id=exp_id, stats_dir=stats_dir)
+    recorder = ExperimentRecorder(id=exp_id, stats_dir=STATS_DIR)
 
-    num_iter_per_epoch = len(trainloader)
-
+    num_iter_per_epoch = len(train_loader)
     params.num_iter_per_epoch = num_iter_per_epoch
-    params.data_counts = trainset.get_label_counts()
-    params.write(stats_dir / f"{exp_id}.json")
+    params.data_counts = train_set.dataset.get_label_counts()
+    params.write(STATS_DIR / f"{exp_id}.json")
 
     for epoch in range(params.num_epochs):  # loop over the dataset multiple times
         running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
+        for i, data in enumerate(train_loader, 0):
             # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
+            inputs, labels, masks = data
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -67,13 +99,18 @@ if __name__ == "__main__":
 
             if i % print_loss_count == print_loss_count - 1:
                 avg_loss = running_loss / print_loss_count
-                print(f"[{epoch}, {i:5d}] loss: {avg_loss:.3f}")
+
                 iteration = epoch * num_iter_per_epoch + i
-                recorder.update(iteration, avg_loss, epoch)
-                recorder.save()
+                recorder.update(iteration, avg_loss, epoch, accuracy=None)
+                print(f"[{epoch}, {i:5d}] loss: {avg_loss:.3f}")
+
                 running_loss = 0.0
 
-        torch.save(net.state_dict(), model_dir / f"{epoch:03}_bag_net.pth")
+        torch.save(net.state_dict(), MODEL_DIR / f"{epoch:03}_bag_net.pth")
+        accuracy = cross_validate(test_loader)
+        recorder.update((epoch + 1) * num_iter_per_epoch, None, epoch, accuracy)
+        recorder.save()
+        print(f"End of epoch {epoch}: accuracy: {accuracy:.3f}")
 
     print("Finished Training")
-    torch.save(net.state_dict(), model_dir / "bag_net.pth")
+    torch.save(net.state_dict(), MODEL_DIR / f"{exp_id}_bag_net.pth")

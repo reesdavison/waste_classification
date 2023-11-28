@@ -12,7 +12,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         # we have 3 labels we're interested in
-        self.fc3 = nn.Linear(84, 3)
+        self.fc3_3out = nn.Linear(84, 3)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -20,5 +20,5 @@ class Net(nn.Module):
         x = torch.flatten(x, 1)  # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.fc3_3out(x)
         return x

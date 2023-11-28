@@ -1,4 +1,5 @@
 import math
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,13 +7,36 @@ import pytest
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from skimage import io
 
-from recycle_eye.classifier.dataloader import BagDataset, basic_transform
+from recycle_eye.classifier.dataloader import (
+    BagDataset,
+    basic_transform,
+    get_object_mask,
+)
 from recycle_eye.classifier.experiment_params import DataCount
 
-"""Let's check we can get our dataset stats to match the CIFAR input data stats to remove potential
-bugs in that area before we begin training.
 """
+Tests:
+- Check we can get our dataset input stats to match the CIFAR input stats
+- Check basic transforms
+- Check background removal transforms
+"""
+
+VISUAL_TEST_ENV = "VISUAL_TEST"
+VISUAL_TEST_CHECK = "non programmatic visual test check"
+
+
+def _imshow(img):
+    img = img / 2 + 0.5  # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
+
+def _raw_imshow(img):
+    plt.imshow(img)
+    plt.show()
 
 
 def _image_and_label_checks(images, labels):
@@ -58,7 +82,7 @@ def test_bag_dataset():
     )
     assert len(trainloader) == math.ceil(num_images / batch_size)
     dataiter = iter(trainloader)
-    images, labels = next(dataiter)
+    images, labels, _ = next(dataiter)
     _image_and_label_checks(images, labels)
     assert (labels <= 2).all()
 
@@ -75,15 +99,40 @@ def test_get_counts():
     )
 
 
-@pytest.mark.skip(reason="Visual test check")
-def test_check_some_images():
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "remove_bg_single",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_remove_bg_single_image():
+    dark_name = "./data/compostable_waste/median_dark.jpg"
+    light_name = "./data/compostable_waste/median_light.jpg"
+    dark_image = io.imread(dark_name)
+    light_image = io.imread(light_name)
+
+    image_name = "./data/mixed_recycling/17.jpg"
+    image = io.imread(image_name)
+    mask = get_object_mask(image, light_image, dark_image)
+    _raw_imshow(image * mask)
+
+
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "remove_bg_transform",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_remove_bg_transform_images():
+    trainset = BagDataset(
+        root_dir="./data", transform=basic_transform(), remove_bg=True
+    )
+    for image, _, _ in trainset:
+        _imshow(image)
+
+
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "basic_transform",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_basic_transform_images():
     trainset = BagDataset(root_dir="./data", transform=basic_transform())
 
-    def _imshow(img):
-        img = img / 2 + 0.5  # unnormalize
-        npimg = img.numpy()
-        plt.imshow(np.transpose(npimg, (1, 2, 0)))
-        plt.show()
-
-    for image, label in trainset:
+    for image, _, _ in trainset:
         _imshow(image)
