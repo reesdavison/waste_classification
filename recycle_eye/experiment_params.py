@@ -9,9 +9,10 @@ class OptimiserType(StrEnum):
     SGD = "sgd"
 
 
-class MethodType(StrEnum):
-    CLASSIFIER_NN = "classifier_nn"
-    KNN_COLOUR_FEATURE = "knn_colour_feature"
+class TransformType(StrEnum):
+    BASIC = "basic"
+    AUTO_AUGMENT = "auto_augment"
+    MOVE_AROUND = "move_around"
 
 
 class DataCount(BaseModel):
@@ -56,11 +57,16 @@ class NNClassifierParams(BaseExperimentParams):
     load_cifar_weights: bool = Field(
         default=False, title="Load weights from pretrained cifar model"
     )
-    auto_augment: bool = Field(
-        default=False,
-        title="Auto augment",
-        description="Apply auto augment paper transformations",
+    transform: TransformType = Field(
+        default=TransformType.BASIC,
+        description="Type of transform to apply to image once bg removed or not removed.",
     )
+    pretrained_model: str | None = Field(
+        default=None,
+        title="Load in pretrained model",
+        description="Load model weights in as the starting point for training.",
+    )
+    crop_image: bool = Field(default=False, title="Crop the image to its bounding box")
 
 
 class KNNParams(BaseExperimentParams):

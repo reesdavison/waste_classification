@@ -6,9 +6,13 @@ import torch.optim as optim
 import torch.utils.data as torch_data
 
 from recycle_eye.classifier.basic_network import Net
-from recycle_eye.classifier.dataloader import BagDataset, basic_transform
-from recycle_eye.classifier.experiment_params import NNClassifierParams
+from recycle_eye.classifier.dataloader import (
+    BagDataset,
+    basic_transform,
+    move_around_transform,
+)
 from recycle_eye.classifier.experiment_recorder import ExperimentRecorder
+from recycle_eye.experiment_params import NNClassifierParams, TransformType
 from recycle_eye.paths import DATA_DIR, MODEL_DIR, STATS_DIR
 
 torch.manual_seed(0)
@@ -33,21 +37,36 @@ def cross_validate(test_loader):
 
 if __name__ == "__main__":
     exp_id = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+
+    # Setup model folder
+    model_folder = MODEL_DIR / exp_id
+    model_folder.mkdir(parents=True, exist_ok=True)
+
     params = NNClassifierParams(
         id=exp_id,
         num_epochs=50,
-        lr=0.01,
+        lr=0.001,  # 0.005,
         momentum=0.9,
         batch_size=4,
         split_seed=42,
         test_split=0.2,
-        remove_bg=True,
-        load_cifar_weights=True,
-        auto_augment=True,
+        remove_bg=False,
+        load_cifar_weights=False,
+        transform=TransformType.BASIC,
+        crop_image=True,
+        # pretrained_model=str(MODEL_DIR / "20231128-23:22:20/final_bag_net.pth"),
+        # pretrained_model=str(MODEL_DIR / "20231128-22:06:16/017_bag_net.pth"),
     )
 
+    transform_func = basic_transform
+    if params.transform == TransformType.MOVE_AROUND:
+        transform_func = move_around_transform
+
     dataset = BagDataset(
-        root_dir=DATA_DIR, transform=basic_transform(), remove_bg=params.remove_bg
+        root_dir=DATA_DIR,
+        transform=transform_func(),
+        remove_bg=params.remove_bg,
+        crop_image=params.crop_image,
     )
     generator1 = torch.Generator().manual_seed(params.split_seed)
     train_set, test_set = torch_data.random_split(
@@ -61,7 +80,9 @@ if __name__ == "__main__":
     )
 
     net = Net()
-    if params.load_cifar_weights:
+    if params.pretrained_model:
+        net.load_state_dict(torch.load(params.pretrained_model))
+    elif params.load_cifar_weights:
         net.load_state_dict(torch.load("./cifar_net.pth"), strict=False)
 
     criterion = nn.CrossEntropyLoss()
@@ -77,13 +98,12 @@ if __name__ == "__main__":
     num_iter_per_epoch = len(train_loader)
     params.num_iter_per_epoch = num_iter_per_epoch
     params.data_counts = train_set.dataset.get_label_counts()
-    params.write(STATS_DIR / f"{exp_id}.json")
+    params.write(STATS_DIR / f"{exp_id}_stats.json")
 
-    for epoch in range(params.num_epochs):  # loop over the dataset multiple times
+    for epoch in range(params.num_epochs):
         running_loss = 0.0
         for i, data in enumerate(train_loader, 0):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels, masks = data
+            inputs, labels, _ = data
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -96,21 +116,18 @@ if __name__ == "__main__":
 
             # print statistics
             running_loss += loss.item()
-
             if i % print_loss_count == print_loss_count - 1:
                 avg_loss = running_loss / print_loss_count
-
                 iteration = epoch * num_iter_per_epoch + i
                 recorder.update(iteration, avg_loss, epoch, accuracy=None)
                 print(f"[{epoch}, {i:5d}] loss: {avg_loss:.3f}")
-
                 running_loss = 0.0
 
-        torch.save(net.state_dict(), MODEL_DIR / f"{epoch:03}_bag_net.pth")
+        torch.save(net.state_dict(), model_folder / f"{epoch:03}_bag_net.pth")
         accuracy = cross_validate(test_loader)
         recorder.update((epoch + 1) * num_iter_per_epoch, None, epoch, accuracy)
         recorder.save()
         print(f"End of epoch {epoch}: accuracy: {accuracy:.3f}")
 
     print("Finished Training")
-    torch.save(net.state_dict(), MODEL_DIR / f"{exp_id}_bag_net.pth")
+    torch.save(net.state_dict(), model_folder / "final_bag_net.pth")

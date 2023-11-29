@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import List
 
@@ -6,11 +5,10 @@ import joblib
 import numpy as np
 import torch
 import torch.utils.data as torch_data
-from pydantic import BaseModel
 from sklearn.neighbors import KNeighborsClassifier
 
 from recycle_eye.classifier.dataloader import BagDataset
-from recycle_eye.classifier.experiment_params import (
+from recycle_eye.experiment_params import (
     KNNAblationExperiment,
     KNNAlgoType,
     KNNParams,

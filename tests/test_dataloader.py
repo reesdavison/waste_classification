@@ -7,14 +7,17 @@ import pytest
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from skimage import io
+from skimage import draw, io
 
 from recycle_eye.classifier.dataloader import (
     BagDataset,
     basic_transform,
-    get_object_mask,
+    crop_image_func,
+    get_bounding_box_func,
+    get_object_mask_func,
+    move_around_transform,
 )
-from recycle_eye.classifier.experiment_params import DataCount
+from recycle_eye.experiment_params import DataCount
 
 """
 Tests:
@@ -111,8 +114,44 @@ def test_check_remove_bg_single_image():
 
     image_name = "./data/mixed_recycling/17.jpg"
     image = io.imread(image_name)
-    mask = get_object_mask(image, light_image, dark_image)
+    mask = get_object_mask_func(image, light_image, dark_image)
     _raw_imshow(image * mask)
+
+
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "crop_to_bb_single",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_crop_to_bb_single_image():
+    dark_name = "./data/compostable_waste/median_dark.jpg"
+    light_name = "./data/compostable_waste/median_light.jpg"
+    dark_image = io.imread(dark_name)
+    light_image = io.imread(light_name)
+
+    image_name = "./data/mixed_recycling/17.jpg"
+    image = io.imread(image_name)
+    mask = get_object_mask_func(image, light_image, dark_image)
+    bb = get_bounding_box_func(mask[:, :, 0])
+    rr, cc = draw.rectangle_perimeter(
+        start=(bb[0], bb[1]), end=(bb[2], bb[3]), shape=image.shape
+    )
+    image[rr, cc, :] = 255
+
+    _raw_imshow(image)
+    cropped_image = crop_image_func(image, bb)
+    _raw_imshow(cropped_image)
+
+
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "crop_to_bb",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_crop_to_bb():
+    trainset = BagDataset(
+        root_dir="./data", transform=basic_transform(), remove_bg=False, crop_image=True
+    )
+    for image, _, _ in trainset:
+        _imshow(image)
 
 
 @pytest.mark.skipif(
@@ -133,6 +172,19 @@ def test_check_remove_bg_transform_images():
 )
 def test_check_basic_transform_images():
     trainset = BagDataset(root_dir="./data", transform=basic_transform())
+
+    for image, _, _ in trainset:
+        _imshow(image)
+
+
+@pytest.mark.skipif(
+    os.environ.get(VISUAL_TEST_ENV) != "move_around_transform",
+    reason=VISUAL_TEST_CHECK,
+)
+def test_check_move_around_transform_images():
+    trainset = BagDataset(
+        root_dir="./data", transform=move_around_transform(), remove_bg=True
+    )
 
     for image, _, _ in trainset:
         _imshow(image)
