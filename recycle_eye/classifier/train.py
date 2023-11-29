@@ -35,6 +35,20 @@ def cross_validate(test_loader):
     return accuracy
 
 
+def get_datasets(params: NNClassifierParams, transform_func: callable):
+    dataset = BagDataset(
+        root_dir=DATA_DIR,
+        transform=transform_func(),
+        remove_bg=params.remove_bg,
+        crop_image=params.crop_image,
+    )
+    generator1 = torch.Generator().manual_seed(params.split_seed)
+    train_set, test_set = torch_data.random_split(
+        dataset, [1 - params.test_split, params.test_split], generator=generator1
+    )
+    return train_set, test_set
+
+
 if __name__ == "__main__":
     exp_id = datetime.now().strftime("%Y%m%d-%H:%M:%S")
 
@@ -62,16 +76,8 @@ if __name__ == "__main__":
     if params.transform == TransformType.MOVE_AROUND:
         transform_func = move_around_transform
 
-    dataset = BagDataset(
-        root_dir=DATA_DIR,
-        transform=transform_func(),
-        remove_bg=params.remove_bg,
-        crop_image=params.crop_image,
-    )
-    generator1 = torch.Generator().manual_seed(params.split_seed)
-    train_set, test_set = torch_data.random_split(
-        dataset, [1 - params.test_split, params.test_split], generator=generator1
-    )
+    train_set, test_set = get_datasets(params, transform_func)
+
     train_loader = torch.utils.data.DataLoader(
         train_set, batch_size=params.batch_size, shuffle=True, num_workers=2
     )

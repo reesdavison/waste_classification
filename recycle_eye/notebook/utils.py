@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from recycle_eye.experiment_params import NNClassifierParams
@@ -26,3 +28,10 @@ def get_loss_df(df: pd.DataFrame, params: NNClassifierParams) -> pd.DataFrame:
     )
     loss_df["cont_epoch"] = loss_df.epoch + iter_above_epoch
     return loss_df
+
+
+def imshow(img):
+    img = img / 2 + 0.5  # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
