@@ -1,0 +1,77 @@
+{
+    "id": "20231128-20:53:35",
+    "results": [
+        {
+            "accuracy": 0.3103448275862069,
+            "params": {
+                "id": "20231128-20:53:35",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 3
+            }
+        },
+        {
+            "accuracy": 0.4827586206896552,
+            "params": {
+                "id": "20231128-20:53:47",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 6
+            }
+        },
+        {
+            "accuracy": 0.5517241379310345,
+            "params": {
+                "id": "20231128-20:53:58",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 9
+            }
+        },
+        {
+            "accuracy": 0.7241379310344828,
+            "params": {
+                "id": "20231128-20:54:10",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 12
+            }
+        },
+        {
+            "accuracy": 0.7241379310344828,
+            "params": {
+                "id": "20231128-20:54:23",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 24
+            }
+        },
+        {
+            "accuracy": 0.6896551724137931,
+            "params": {
+                "id": "20231128-20:54:35",
+                "split_seed": 42,
+                "test_split": 0.2,
+                "remove_bg": false,
+                "n_neighbours": 5,
+                "algorithm": "brute",
+                "feature_size": 48
+            }
+        }
+    ]
+}

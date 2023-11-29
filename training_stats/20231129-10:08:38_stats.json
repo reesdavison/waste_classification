@@ -1,0 +1,33 @@
+{
+    "id": "20231129-10:08:38",
+    "split_seed": 42,
+    "test_split": 0.2,
+    "remove_bg": false,
+    "lr": 0.005,
+    "batch_size": 4,
+    "optimiser": "sgd",
+    "momentum": 0.9,
+    "num_epochs": 50,
+    "data_counts": [
+        {
+            "ord_label": 0,
+            "label": "compostable_waste",
+            "count": 44
+        },
+        {
+            "ord_label": 1,
+            "label": "general_waste",
+            "count": 51
+        },
+        {
+            "ord_label": 2,
+            "label": "mixed_recycling",
+            "count": 51
+        }
+    ],
+    "num_iter_per_epoch": 30,
+    "load_cifar_weights": false,
+    "transform": "basic",
+    "pretrained_model": null,
+    "crop_image": true
+}
