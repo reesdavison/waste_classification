@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 import torch
-from skimage import color, feature, filters, io
+from skimage import color, filters, io
 from torch.utils.data import Dataset
 from torchvision import transforms
 from torchvision.transforms import v2 as v2

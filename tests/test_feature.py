@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from recycle_eye.classifier.dataloader import BagDataset
-from recycle_eye.clustering.features import extract_feature
+from recycle_eye.dataloader import BagDataset
+from recycle_eye.features.features import extract_feature
 
 
 def test_feature_extraction_bad_size():

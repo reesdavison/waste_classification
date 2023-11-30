@@ -5,14 +5,10 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as torch_data
 
-from recycle_eye.classifier.basic_network import Net
-from recycle_eye.classifier.dataloader import (
-    BagDataset,
-    basic_transform,
-    move_around_transform,
-)
-from recycle_eye.classifier.experiment_recorder import ExperimentRecorder
+from recycle_eye.dataloader import BagDataset, basic_transform, move_around_transform
 from recycle_eye.experiment_params import NNClassifierParams, TransformType
+from recycle_eye.nn.basic_network import Net
+from recycle_eye.nn.experiment_recorder import ExperimentRecorder
 from recycle_eye.paths import DATA_DIR, MODEL_DIR, STATS_DIR
 
 torch.manual_seed(0)

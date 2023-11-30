@@ -9,7 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from skimage import draw, io
 
-from recycle_eye.classifier.dataloader import (
+from recycle_eye.dataloader import (
     BagDataset,
     basic_transform,
     crop_image_func,

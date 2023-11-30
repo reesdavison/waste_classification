@@ -7,7 +7,7 @@ import torch
 import torch.utils.data as torch_data
 from sklearn.neighbors import KNeighborsClassifier
 
-from recycle_eye.classifier.dataloader import BagDataset
+from recycle_eye.dataloader import BagDataset
 from recycle_eye.experiment_params import (
     KNNAblationExperiment,
     KNNAlgoType,
