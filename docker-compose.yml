@@ -9,6 +9,7 @@ services:
     ports: 
       - "8888:8888"
     volumes:
-      - ./notebooks:/workspace/notebooks
-      - ./data:/workspace/data
-    command: /bin/bash -c "jupyter notebook --ip 0.0.0.0 --allow-root --no-browser"
+      - ./:/workspace
+    environment:
+      - PATH="/opt/venv/bin:$PATH"
+    command: /bin/bash -c "poetry install && poetry run jupyter lab --ip 0.0.0.0 --allow-root --no-browser"

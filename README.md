@@ -41,4 +41,9 @@ This will spin up a jupyter notebook in your browser - please use it for your de
 
 Good luck! 
 
-
+## Running notebooks/bin_bag_challenge.ipynb
+- In theory it should run on mac or linux with the pinned dependencies.
+- I've put some effort into maintaining the Dockerfile - so that should be your easiest bet.
+- Most development I did on a mac using poetry for development as a package manager.
+- If you want to run locally follow the [instructions](https://python-poetry.org/docs/#installation) for installing poetry. Then run `poetry install` in a new environment of your choosing - conda, venv etc.
+- Let me know if you run into any issues.

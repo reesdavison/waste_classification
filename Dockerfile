@@ -1,6 +1,10 @@
-FROM python:3.8.18
+FROM python:3.11
 
 WORKDIR /workspace
-COPY ./requirements.txt . 
 
-RUN pip install -r requirements.txt
+COPY pyproject.toml poetry.lock ./
+RUN pip install poetry
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN poetry install --no-root --no-directory
