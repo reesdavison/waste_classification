@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from torchvision.transforms import v2 as v2
 
-from recycle_eye.experiment_params import DataCount
+from waste_classification.experiment_params import DataCount
 
 
 def basic_transform() -> transforms.Compose:

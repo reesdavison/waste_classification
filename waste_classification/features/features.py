@@ -7,14 +7,14 @@ import torch
 import torch.utils.data as torch_data
 from sklearn.neighbors import KNeighborsClassifier
 
-from recycle_eye.dataloader import BagDataset
-from recycle_eye.experiment_params import (
+from waste_classification.dataloader import BagDataset
+from waste_classification.experiment_params import (
     KNNAblationExperiment,
     KNNAlgoType,
     KNNParams,
     KNNResult,
 )
-from recycle_eye.paths import DATA_DIR, MODEL_DIR, STATS_DIR
+from waste_classification.paths import DATA_DIR, MODEL_DIR, STATS_DIR
 
 
 def extract_feature(

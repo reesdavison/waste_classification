@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "recycle-eye"
+name = "waste-classification"
 version = "0.1.0"
 description = ""
 authors = ["Rees Davison <rees@hazy.com>"]
 readme = "README.md"
-packages = [{include = "recycle_eye"}]
+packages = [{include = "waste_classification"}]
 
 
 [[tool.poetry.source]]

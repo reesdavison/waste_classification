@@ -5,11 +5,15 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as torch_data
 
-from recycle_eye.dataloader import BagDataset, basic_transform, move_around_transform
-from recycle_eye.experiment_params import NNClassifierParams, TransformType
-from recycle_eye.nn.basic_network import Net
-from recycle_eye.nn.experiment_recorder import ExperimentRecorder
-from recycle_eye.paths import DATA_DIR, MODEL_DIR, STATS_DIR
+from waste_classification.dataloader import (
+    BagDataset,
+    basic_transform,
+    move_around_transform,
+)
+from waste_classification.experiment_params import NNClassifierParams, TransformType
+from waste_classification.nn.basic_network import Net
+from waste_classification.nn.experiment_recorder import ExperimentRecorder
+from waste_classification.paths import DATA_DIR, MODEL_DIR, STATS_DIR
 
 torch.manual_seed(0)
 

@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from recycle_eye.classifier.basic_network import Net
-from recycle_eye.classifier.dataloader import BagDataset, basic_transform
-from recycle_eye.classifier.experiment_recorder import TrainingStats
+from waste_classification.classifier.basic_network import Net
+from waste_classification.classifier.dataloader import BagDataset, basic_transform
+from waste_classification.classifier.experiment_recorder import TrainingStats
 
 batch_size = 4
 

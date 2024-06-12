@@ -9,7 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from skimage import draw, io
 
-from recycle_eye.dataloader import (
+from waste_classification.dataloader import (
     BagDataset,
     basic_transform,
     crop_image_func,
@@ -17,7 +17,7 @@ from recycle_eye.dataloader import (
     get_object_mask_func,
     move_around_transform,
 )
-from recycle_eye.experiment_params import DataCount
+from waste_classification.experiment_params import DataCount
 
 """
 Tests:

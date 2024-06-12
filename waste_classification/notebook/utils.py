@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from recycle_eye.experiment_params import NNClassifierParams
+from waste_classification.experiment_params import NNClassifierParams
 
 
 def get_nn_run(exp_id: str, root_folder: str) -> (pd.DataFrame, NNClassifierParams):
